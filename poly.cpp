@@ -4,6 +4,18 @@
 #include <iostream>
 #include <vector>
 
+double poly_value_naive(double *data_ptr, size_t data_size, double x) {
+  double cx = 1;
+  double value = 0;
+
+  for (size_t i = 0; i < data_size; i++) {
+    value += cx * data_ptr[i];
+    cx *= x;
+  }
+
+  return value;
+}
+
 double poly_value_nosimd(double *data_ptr, size_t data_size, double x) {
   double cx = 1;
   double sx = x * x;
@@ -46,6 +58,7 @@ double poly_value_simd(double *data_ptr, size_t data_size, double x) {
 #define TESTS (10)
 
 void poly_test() {
+  std::vector<double> results_naive(TESTS);
   std::vector<double> results_simd(TESTS);
   std::vector<double> results_nosimd(TESTS);
 
@@ -55,6 +68,14 @@ void poly_test() {
       data[k] = random_double();
     }
     double x = random_double();
+
+    {
+      time_point start = now();
+      double value = poly_value_naive(data.data(), data.size(), x);
+      double time_ms = since_ms(start);
+      std::cout << "NAIVE:  " << value << " " << time_ms << "ms\n";
+      results_naive[i] = time_ms;
+    }
 
     {
       time_point start = now();
@@ -73,10 +94,12 @@ void poly_test() {
     }
   }
 
+  double avg_naive = average(results_naive);
   double avg_nosimd = average(results_nosimd);
   double avg_simd = average(results_simd);
 
-  std::cout << "\e[32mNOSIMD: \e[0m" << avg_nosimd << "ms\n"
+  std::cout << "\e[32mNAIVE:  \e[0m" << avg_naive << "ms\n"
+            << "\e[32mNOSIMD: \e[0m" << avg_nosimd << "ms\n"
             << "\e[32mSIMD:   \e[0m" << avg_simd << "ms ("
             << avg_simd / avg_nosimd << ")\n\n";
 }

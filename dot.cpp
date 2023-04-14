@@ -2,6 +2,15 @@
 #include <immintrin.h>
 #include <iostream>
 
+double dot_naive(const double *data1_ptr, const double *data2_ptr,
+                 size_t data_size) {
+  double acc = 0;
+  for (size_t k = 0; k < data_size; k++) {
+    acc += data1_ptr[k] * data2_ptr[k];
+  }
+  return acc;
+}
+
 double dot_nosimd(const double *data1_ptr, const double *data2_ptr,
                   size_t data_size) {
   double acc = 0;
@@ -33,6 +42,7 @@ double dot_simd(const double *data1_ptr, const double *data2_ptr,
 #define TESTS (10)
 
 void dot_test() {
+  std::vector<double> results_naive(TESTS);
   std::vector<double> results_simd(TESTS);
   std::vector<double> results_nosimd(TESTS);
 
@@ -42,6 +52,14 @@ void dot_test() {
     for (size_t k = 0; k < SIZE; k++) {
       data1[k] = random_double();
       data2[k] = random_double();
+    }
+
+    {
+      time_point start = now();
+      double value = dot_naive(data1.data(), data2.data(), SIZE);
+      double time_ms = since_ms(start);
+      std::cout << "NAIVE:  " << value << " " << time_ms << "ms\n";
+      results_naive[i] = time_ms;
     }
 
     {
@@ -63,10 +81,12 @@ void dot_test() {
     }
   }
 
+  double avg_naive = average(results_naive);
   double avg_nosimd = average(results_nosimd);
   double avg_simd = average(results_simd);
 
-  std::cout << "\e[32mNOSIMD: \e[0m" << avg_nosimd << "ms\n"
+  std::cout << "\e[32mNAIVE:  \e[0m" << avg_naive << "ms\n"
+            << "\e[32mNOSIMD: \e[0m" << avg_nosimd << "ms\n"
             << "\e[32mSIMD:   \e[0m" << avg_simd << "ms ("
             << avg_simd / avg_nosimd << ")\n\n";
 }

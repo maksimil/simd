@@ -3,6 +3,16 @@
 #include <iostream>
 #include <vector>
 
+void lin_form_naive(double *out_ptr, const double *form_ptr, size_t form_size,
+                    const double *data_ptr, size_t data_size) {
+  for (size_t k = 0; k < data_size; k++) {
+    out_ptr[k] = 0;
+    for (size_t i = 0; i < form_size; i++) {
+      out_ptr[k] += form_ptr[i] * data_ptr[form_size * k + i];
+    }
+  }
+}
+
 void lin_form_nosimd(double *out_ptr, const double *form_ptr, size_t form_size,
                      const double *data_ptr, size_t data_size) {
   for (size_t k = 0; k <= data_size - 4; k += 4) {
@@ -43,6 +53,7 @@ void lin_form_simd(double *out_ptr, const double *form_ptr, size_t form_size,
 #define TESTS (10)
 
 void lin_form_test() {
+  std::vector<double> results_naive(TESTS);
   std::vector<double> results_simd(TESTS);
   std::vector<double> results_nosimd(TESTS);
 
@@ -55,6 +66,15 @@ void lin_form_test() {
     std::vector<double> form(FORMSIZE);
     for (size_t k = 0; k < FORMSIZE; k++) {
       form[k] = random_double();
+    }
+
+    {
+      std::vector<double> out(SIZE);
+      time_point start = now();
+      lin_form_naive(out.data(), form.data(), FORMSIZE, data.data(), SIZE);
+      double time_ms = since_ms(start);
+      std::cout << "NAIVE:  " << out[SIZE / 2] << " " << time_ms << "ms\n";
+      results_naive[i] = time_ms;
     }
 
     {
@@ -76,10 +96,12 @@ void lin_form_test() {
     }
   }
 
+  double avg_naive = average(results_naive);
   double avg_nosimd = average(results_nosimd);
   double avg_simd = average(results_simd);
 
-  std::cout << "\e[32mNOSIMD: \e[0m" << avg_nosimd << "ms\n"
+  std::cout << "\e[32mNAIVE:  \e[0m" << avg_naive << "ms\n"
+            << "\e[32mNOSIMD: \e[0m" << avg_nosimd << "ms\n"
             << "\e[32mSIMD:   \e[0m" << avg_simd << "ms ("
             << avg_simd / avg_nosimd << ")\n\n";
 }
