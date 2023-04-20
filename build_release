@@ -1,0 +1,13 @@
+echo "==== Building simd (release) ===="
+echo Creating obj/Release
+mkdir -p obj/Release
+echo "dot.cpp"
+g++   -MD -MP -DNDEBUG  -O2 -mavx  -o "obj/Release/dot.o" -MF "obj/Release/dot.d" -c "dot.cpp"
+echo "lin_form.cpp"
+g++   -MD -MP -DNDEBUG  -O2 -mavx  -o "obj/Release/lin_form.o" -MF "obj/Release/lin_form.d" -c "lin_form.cpp"
+echo "main.cpp"
+g++   -MD -MP -DNDEBUG  -O2 -mavx  -o "obj/Release/main.o" -MF "obj/Release/main.d" -c "main.cpp"
+echo "poly.cpp"
+g++   -MD -MP -DNDEBUG  -O2 -mavx  -o "obj/Release/poly.o" -MF "obj/Release/poly.d" -c "poly.cpp"
+echo Linking simd
+g++ -o "bin/Release/simd"  obj/Release/dot.o obj/Release/lin_form.o obj/Release/main.o obj/Release/poly.o   -s 
