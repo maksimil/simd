@@ -9,5 +9,7 @@ echo "main.cpp"
 g++   -MD -MP -DNDEBUG  -O2 -mavx  -o "obj/Release/main.o" -MF "obj/Release/main.d" -c "main.cpp"
 echo "poly.cpp"
 g++   -MD -MP -DNDEBUG  -O2 -mavx  -o "obj/Release/poly.o" -MF "obj/Release/poly.d" -c "poly.cpp"
+echo Creating bin/Release
+mkdir -p bin/Release
 echo Linking simd
 g++ -o "bin/Release/simd"  obj/Release/dot.o obj/Release/lin_form.o obj/Release/main.o obj/Release/poly.o   -s 
